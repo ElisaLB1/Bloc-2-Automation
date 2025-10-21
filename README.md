@@ -1,8 +1,10 @@
-# 🚀 Sustainable Food Ordering Automation Project
+A project by Valentin Gorse, Elisa Leclerc, JEan-Baptiste Brun, Corentin Charpentier, Yacine Lassouani, James Willems
+
+# Sustainable Food Ordering Automation Project
 
 This project sets up a minimum viable data automation system for a sustainable food ordering platform using Docker, Kubernetes, Airflow for ETL, PostgreSQL for data storage, and Grafana for observability.
 
-## 📋 Project Structure
+## Project Structure
 
 ```
 /project-root
@@ -31,7 +33,7 @@ This project sets up a minimum viable data automation system for a sustainable f
 └── README.md
 ```
 
-## 🚀 Getting Started
+## Getting Started
 
 ### 1. Local Setup with Docker Compose
 
@@ -135,7 +137,7 @@ Assuming you have `minikube` and `kubectl` installed:
         minikube service -n food-automation grafana
         ```
 
-## 🧹 Cleanup
+## Cleanup
 
 ### Docker Compose
 ```bash
