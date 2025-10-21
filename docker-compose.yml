@@ -1,0 +1,83 @@
+services:
+  postgres:
+    image: postgres:13
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_DB: airflow
+      POSTGRES_USER: airflow
+      POSTGRES_PASSWORD: airflow
+    volumes:
+      - ./db/init.sql:/docker-entrypoint-initdb.d/init.sql
+      - postgres_data:/var/lib/postgresql/data
+
+  airflow-webserver:
+    build: ./airflow
+    entrypoint: /entrypoint.sh
+    command: airflow webserver
+    ports:
+      - "8080:8080"
+    environment:
+      AIRFLOW_WEBSERVER_HOSTNAME: 0.0.0.0
+      AIRFLOW_DATABASE_HOST: postgres
+      AIRFLOW_DATABASE_PORT: 5432
+      AIRFLOW_DATABASE_USER: airflow
+      AIRFLOW_DATABASE_PASSWORD: airflow
+      AIRFLOW_DATABASE_DB: airflow
+      AIRFLOW_LOAD_EXAMPLES: 'false'
+      AIRFLOW__CORE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@postgres:5432/airflow
+      AIRFLOW__WEBSERVER__SECRET_KEY: "super-secret-key"
+    depends_on:
+      - postgres
+      - airflow-init
+    volumes:
+      - ./airflow/dags:/opt/airflow/dags
+
+  airflow-scheduler:
+    build: ./airflow
+    entrypoint: /entrypoint.sh
+    command: airflow scheduler
+    environment:
+      AIRFLOW_DATABASE_HOST: postgres
+      AIRFLOW_DATABASE_PORT: 5432
+      AIRFLOW_DATABASE_USER: airflow
+      AIRFLOW_DATABASE_PASSWORD: airflow
+      AIRFLOW_DATABASE_DB: airflow
+      AIRFLOW_LOAD_EXAMPLES: 'false'
+      AIRFLOW__CORE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@postgres:5432/airflow
+      AIRFLOW__WEBSERVER__SECRET_KEY: "super-secret-key"
+    depends_on:
+      - postgres
+      - airflow-init
+    volumes:
+      - ./airflow/dags:/opt/airflow/dags
+
+  airflow-init:
+    build: ./airflow
+    entrypoint: /bin/bash -c 'for i in $(seq 1 30); do if nc -z postgres 5432; then break; fi; echo "Waiting for DB"; sleep 1; done; airflow db migrate && airflow users create -u admin -f admin -l admin -r Admin -e admin@example.com -p admin || true; airflow connections delete postgres_default || true; airflow connections add postgres_default --conn-type postgres --conn-host postgres --conn-port 5432 --conn-schema airflow --conn-login airflow --conn-password airflow'
+    environment:
+      AIRFLOW_DATABASE_HOST: postgres
+      AIRFLOW_DATABASE_PORT: 5432
+      AIRFLOW_DATABASE_USER: airflow
+      AIRFLOW_DATABASE_PASSWORD: airflow
+      AIRFLOW_DATABASE_DB: airflow
+      AIRFLOW_LOAD_EXAMPLES: 'false'
+      AIRFLOW__CORE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@postgres:5432/airflow
+      AIRFLOW__WEBSERVER__SECRET_KEY: "super-secret-key"
+    depends_on:
+      - postgres
+
+  grafana:
+    image: grafana/grafana:latest
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./grafana/provisioning:/etc/grafana/provisioning
+      - grafana_data:/var/lib/grafana
+    environment:
+      GF_SECURITY_ADMIN_USER: admin
+      GF_SECURITY_ADMIN_PASSWORD: admin
+
+volumes:
+  postgres_data:
+  grafana_data:

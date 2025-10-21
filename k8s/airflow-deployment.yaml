@@ -1,0 +1,113 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: airflow-webserver
+  namespace: food-automation
+spec:
+  selector:
+    app: airflow
+    component: webserver
+  ports:
+    - protocol: TCP
+      port: 8080
+      targetPort: 8080
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: airflow-webserver
+  namespace: food-automation
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: airflow
+      component: webserver
+  template:
+    metadata:
+      labels:
+        app: airflow
+        component: webserver
+    spec:
+      containers:
+        - name: airflow-webserver
+          image: airflow:latest # This assumes you've built the airflow image locally
+          command: ["airflow", "webserver"]
+          env:
+            - name: AIRFLOW_WEBSERVER_HOSTNAME
+              value: 0.0.0.0
+            - name: AIRFLOW_DATABASE_HOST
+              value: postgres
+            - name: AIRFLOW_DATABASE_PORT
+              value: "5432"
+            - name: AIRFLOW_DATABASE_USER
+              value: airflow
+            - name: AIRFLOW_DATABASE_PASSWORD
+              value: airflow
+            - name: AIRFLOW_DATABASE_DB
+              value: airflow
+            - name: AIRFLOW_LOAD_EXAMPLES
+              value: "false"
+          ports:
+            - containerPort: 8080
+          volumeMounts:
+            - mountPath: /opt/airflow/dags
+              name: airflow-dags-storage
+      volumes:
+        - name: airflow-dags-storage
+          persistentVolumeClaim:
+            claimName: airflow-dags-pv-claim
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: airflow-scheduler
+  namespace: food-automation
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: airflow
+      component: scheduler
+  template:
+    metadata:
+      labels:
+        app: airflow
+        component: scheduler
+    spec:
+      containers:
+        - name: airflow-scheduler
+          image: airflow:latest # This assumes you've built the airflow image locally
+          command: ["airflow", "scheduler"]
+          env:
+            - name: AIRFLOW_DATABASE_HOST
+              value: postgres
+            - name: AIRFLOW_DATABASE_PORT
+              value: "5432"
+            - name: AIRFLOW_DATABASE_USER
+              value: airflow
+            - name: AIRFLOW_DATABASE_PASSWORD
+              value: airflow
+            - name: AIRFLOW_DATABASE_DB
+              value: airflow
+            - name: AIRFLOW_LOAD_EXAMPLES
+              value: "false"
+          volumeMounts:
+            - mountPath: /opt/airflow/dags
+              name: airflow-dags-storage
+      volumes:
+        - name: airflow-dags-storage
+          persistentVolumeClaim:
+            claimName: airflow-dags-pv-claim
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: airflow-dags-pv-claim
+  namespace: food-automation
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi

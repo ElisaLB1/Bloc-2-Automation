@@ -1,0 +1,5 @@
+apache-airflow==2.8.1
+apache-airflow-providers-postgres
+Flask-Session==0.4.0
+virtualenv
+apache-airflow-providers-amazon

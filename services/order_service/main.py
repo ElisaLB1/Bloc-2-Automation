@@ -1,0 +1,58 @@
+from fastapi import FastAPI, Depends, HTTPException
+from sqlalchemy.orm import Session
+from typing import List
+
+from . import models
+
+app = FastAPI()
+
+# Dependency to get the database session
+def get_db():
+    db = models.SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
+
+@app.on_event("startup")
+def startup_event():
+    models.create_db_tables() # Create tables if they don't exist
+
+@app.post("/order/", response_model=models.Order)
+def create_order(order: models.OrderCreate, db: Session = Depends(get_db)):
+    db_order = models.Order(**order.dict())
+    db.add(db_order)
+    db.commit()
+    db.refresh(db_order)
+    return db_order
+
+@app.get("/orders/", response_model=List[models.Order])
+def read_orders(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
+    orders = db.query(models.Order).offset(skip).limit(limit).all()
+    return orders
+
+@app.post("/customer/", response_model=models.Customer)
+def create_customer(customer: models.CustomerCreate, db: Session = Depends(get_db)):
+    db_customer = models.Customer(**customer.dict())
+    db.add(db_customer)
+    db.commit()
+    db.refresh(db_customer)
+    return db_customer
+
+@app.get("/customers/", response_model=List[models.Customer])
+def read_customers(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
+    customers = db.query(models.Customer).offset(skip).limit(limit).all()
+    return customers
+
+@app.post("/menu_item/", response_model=models.MenuItem)
+def create_menu_item(menu_item: models.MenuItemCreate, db: Session = Depends(get_db)):
+    db_menu_item = models.MenuItem(**menu_item.dict())
+    db.add(db_menu_item)
+    db.commit()
+    db.refresh(db_menu_item)
+    return db_menu_item
+
+@app.get("/menu_items/", response_model=List[models.MenuItem])
+def read_menu_items(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
+    menu_items = db.query(models.MenuItem).offset(skip).limit(limit).all()
+    return menu_items

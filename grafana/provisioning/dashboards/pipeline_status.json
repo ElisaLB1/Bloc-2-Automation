@@ -1,0 +1,105 @@
+{
+  "annotations": {
+    "list": []
+  },
+  "editable": true,
+  "gnetId": null,
+  "graphTooltip": 1,
+  "id": null,
+  "links": [],
+  "panels": [
+    {
+      "datasource": null,
+      "fieldConfig": {
+        "defaults": {
+          "custom": {},
+          "min": 0
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 9,
+        "w": 12,
+        "x": 0,
+        "y": 0
+      },
+      "id": 2,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "limit": 100
+        },
+        "showPercent": false,
+        "text": {},
+        "textMode": "value_and_name"
+      },
+      "pluginviz": {
+        "id": "stat",
+        "name": "Stat"
+      },
+      "title": "DAG Run Count by Day (Mock)",
+      "type": "stat"
+    },
+    {
+      "datasource": null,
+      "fieldConfig": {
+        "defaults": {
+          "custom": {},
+          "min": 0
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 9,
+        "w": 12,
+        "x": 12,
+        "y": 0
+      },
+      "id": 4,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "limit": 100
+        },
+        "showPercent": false,
+        "text": {},
+        "textMode": "value_and_name"
+      },
+      "pluginviz": {
+        "id": "stat",
+        "name": "Stat"
+      },
+      "title": "Total Orders This Week (Mock)",
+      "type": "stat"
+    }
+  ],
+  "schemaVersion": 30,
+  "style": "dark",
+  "tags": [],
+  "templating": {
+    "list": []
+  },
+  "time": {
+    "from": "now-6h",
+    "to": "now"
+  },
+  "timepicker": {},
+  "timezone": "browser",
+  "title": "Pipeline Status Dashboard",
+  "uid": "pipelinestatus",
+  "version": 1
+}
