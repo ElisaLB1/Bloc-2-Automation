@@ -149,3 +149,80 @@ docker-compose down -v
 kubectl delete namespace food-automation
 minikube stop
 ```
+## Data Architecture
+
+### Entity Relationship Diagram (ERD)
+
+The database contains 5 operational tables:
+
+- `customers` — platform users
+- `orders` — orders placed by customers
+- `order_items` — junction table linking orders and products (N-N)
+- `products` — available food products (with `is_sustainable` flag)
+- `suppliers` — product suppliers with certification info
+
+Key relationships:
+- One customer → many orders
+- One order → many order_items
+- One product → many order_items
+- One supplier → many products
+
+### Star Schema (Analytics)
+
+For analytics, the ETL DAG aggregates operational data into a star schema:
+
+- **Fact table**: `fact_order_items` (quantity, unit_price, total)
+- **Dimensions**: `dim_date`, `dim_customer`, `dim_product`, `dim_supplier`
+
+## Infrastructure as Code (Terraform)
+
+Terraform provisions the full Kubernetes infrastructure on Minikube.
+
+### Deploy with Terraform
+
+```bash
+# Start Minikube
+minikube start
+
+# Build Airflow image
+cd airflow && docker build -t airflow:latest . && minikube image load airflow:latest && cd ..
+
+# Init and apply
+cd terraform
+terraform init
+terraform apply
+```
+
+### Or use the deploy script
+
+```bash
+chmod +x scripts/deploy.sh
+./scripts/deploy.sh
+```
+
+### Teardown
+
+```bash
+./scripts/teardown.sh
+```
+
+### Health check
+
+```bash
+./scripts/check-health.sh
+```
+
+## Project Structure
+
+```
+/airflow        — Airflow Dockerfile and DAGs
+/db             — PostgreSQL init.sql schema
+/docker         — Additional Docker configs
+/grafana        — Grafana dashboard provisioning
+/k8s            — Kubernetes manifests
+/scripts        — deploy.sh, teardown.sh, check-health.sh
+/services       — FastAPI order microservice
+/terraform      — Terraform IaC (main.tf, variables.tf, outputs.tf)
+docker-compose.yml
+README.md
+```
