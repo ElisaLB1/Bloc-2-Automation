@@ -23,6 +23,23 @@ resource "kubernetes_namespace" "food_automation" {
   }
 }
 
+# ─── POSTGRES ────────────────────────────────────────────────
+
+resource "kubernetes_persistent_volume_claim" "postgres_pvc" {
+  metadata {
+    name      = "postgres-pvc"
+    namespace = kubernetes_namespace.food_automation.metadata[0].name
+  }
+  spec {
+    access_modes = ["ReadWriteOnce"]
+    resources {
+      requests = {
+        storage = "1Gi"
+      }
+    }
+  }
+}
+
 resource "kubernetes_deployment" "postgres" {
   metadata {
     name      = "postgres"
@@ -45,6 +62,16 @@ resource "kubernetes_deployment" "postgres" {
           env { name = "POSTGRES_USER"     value = "airflow" }
           env { name = "POSTGRES_PASSWORD" value = "airflow" }
           port { container_port = 5432 }
+          volume_mount {
+            name       = "postgres-storage"
+            mount_path = "/var/lib/postgresql/data"
+          }
+        }
+        volume {
+          name = "postgres-storage"
+          persistent_volume_claim {
+            claim_name = kubernetes_persistent_volume_claim.postgres_pvc.metadata[0].name
+          }
         }
       }
     }
@@ -65,6 +92,8 @@ resource "kubernetes_service" "postgres" {
   }
 }
 
+# ─── AIRFLOW ─────────────────────────────────────────────────
+
 resource "kubernetes_deployment" "airflow" {
   metadata {
     name      = "airflow"
@@ -84,7 +113,7 @@ resource "kubernetes_deployment" "airflow" {
           name              = "airflow"
           image             = "airflow:latest"
           image_pull_policy = "Never"
-          env { name = "AIRFLOW__CORE__EXECUTOR" value = "LocalExecutor" }
+          env { name = "AIRFLOW__CORE__EXECUTOR"            value = "LocalExecutor" }
           env { name = "AIRFLOW__DATABASE__SQL_ALCHEMY_CONN" value = "postgresql+psycopg2://airflow:airflow@postgres:5432/food_ordering" }
           port { container_port = 8080 }
         }
@@ -99,8 +128,8 @@ resource "kubernetes_service" "airflow" {
     namespace = kubernetes_namespace.food_automation.metadata[0].name
   }
   spec {
-    selector  = { app = "airflow" }
-    type      = "NodePort"
+    selector = { app = "airflow" }
+    type     = "NodePort"
     port {
       port        = 8080
       target_port = 8080
@@ -108,6 +137,8 @@ resource "kubernetes_service" "airflow" {
     }
   }
 }
+
+# ─── GRAFANA ─────────────────────────────────────────────────
 
 resource "kubernetes_deployment" "grafana" {
   metadata {
