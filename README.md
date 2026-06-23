@@ -50,6 +50,8 @@ This project sets up a minimum viable data automation system for a sustainable f
 3.  **Access Services**:
     *   **Airflow Webserver**: `http://localhost:8080` (User: `airflow`, Pass: `airflow` - *Note: default setup for local development*)
     *   **Grafana**: `http://localhost:3000` (User: `admin`, Pass: `admin`)
+    *   > **Security note**: these are default credentials for local development only.
+        > In production, they would be managed via Kubernetes Secrets and never committed to the repository.
     *   **PostgreSQL**: Accessible on port `5432`.
     *   **Order Microservice**: Not managed by `docker-compose.yml` for this MVP. You'll need to run it separately.
 
