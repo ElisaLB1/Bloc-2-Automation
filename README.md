@@ -1,4 +1,4 @@
-A project by Valentin Gorse, Elisa Leclerc, JEan-Baptiste Brun, Corentin Charpentier, Yacine Lassouani, James Willems
+
 
 # Sustainable Food Ordering Automation Project
 
