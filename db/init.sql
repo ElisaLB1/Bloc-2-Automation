@@ -1,7 +1,3 @@
--- ============================================================
--- OPERATIONAL SCHEMA (tables sources)
--- ============================================================
-
 CREATE TABLE IF NOT EXISTS suppliers (
     supplier_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     name        VARCHAR(255) NOT NULL,
@@ -44,10 +40,6 @@ CREATE TABLE IF NOT EXISTS order_items (
     quantity   INTEGER NOT NULL CHECK (quantity > 0),
     unit_price NUMERIC(10, 2) NOT NULL
 );
-
--- ============================================================
--- ANALYTICS SCHEMA (star schema)
--- ============================================================
 
 CREATE TABLE IF NOT EXISTS dim_date (
     date_id  DATE PRIMARY KEY,
@@ -93,10 +85,6 @@ CREATE TABLE IF NOT EXISTS fact_order_items (
     unit_price    NUMERIC(10, 2),
     total         NUMERIC(10, 2)
 );
-
--- ============================================================
--- SAMPLE DATA
--- ============================================================
 
 INSERT INTO suppliers (supplier_id, name, contact_email, certification) VALUES
     ('a1b2c3d4-0000-0000-0000-000000000001', 'GreenFarm Co.', 'contact@greenfarm.io', 'Bio EU'),

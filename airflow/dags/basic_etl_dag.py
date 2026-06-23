@@ -4,7 +4,7 @@ from airflow.operators.python import PythonOperator
 from datetime import datetime, date
 
 
-def _load_dim_date(target_date: date):
+def _load_dim_date(target_date):
     hook = PostgresHook(postgres_conn_id="postgres_default")
     conn = hook.get_conn()
     cur = conn.cursor()
@@ -30,7 +30,6 @@ def _load_dimensions():
     conn = hook.get_conn()
     cur = conn.cursor()
 
-    # dim_customer
     cur.execute("""
         INSERT INTO dim_customer (customer_id, full_name, email, city, region, created_at)
         SELECT customer_id,
@@ -38,12 +37,11 @@ def _load_dimensions():
                email, city, region, created_at
         FROM customers
         ON CONFLICT (customer_id) DO UPDATE
-            SET full_name  = EXCLUDED.full_name,
-                city       = EXCLUDED.city,
-                region     = EXCLUDED.region
+            SET full_name = EXCLUDED.full_name,
+                city      = EXCLUDED.city,
+                region    = EXCLUDED.region
     """)
 
-    # dim_supplier
     cur.execute("""
         INSERT INTO dim_supplier (supplier_id, name, certification)
         SELECT supplier_id, name, certification
@@ -53,7 +51,6 @@ def _load_dimensions():
                 certification = EXCLUDED.certification
     """)
 
-    # dim_product
     cur.execute("""
         INSERT INTO dim_product (product_id, name, category, supplier_name, is_sustainable)
         SELECT p.product_id, p.name, p.category, s.name, p.is_sustainable
@@ -72,12 +69,12 @@ def _load_dimensions():
 
 
 def _load_facts(**context):
-    target_date = context["ds"]  # date d'exécution Airflow (YYYY-MM-DD)
+    target_date = date.fromisoformat(context["ds"])
     hook = PostgresHook(postgres_conn_id="postgres_default")
     conn = hook.get_conn()
     cur = conn.cursor()
 
-    _load_dim_date(date.fromisoformat(target_date))
+    _load_dim_date(target_date)
 
     cur.execute("""
         INSERT INTO fact_order_items
@@ -94,7 +91,7 @@ def _load_facts(**context):
             oi.unit_price,
             oi.quantity * oi.unit_price
         FROM order_items oi
-        JOIN orders  o ON oi.order_id   = o.order_id
+        JOIN orders   o ON oi.order_id   = o.order_id
         JOIN products p ON oi.product_id = p.product_id
         WHERE o.order_date::date = %s
         ON CONFLICT (order_item_id) DO UPDATE
